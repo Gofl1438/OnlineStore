@@ -2,16 +2,19 @@ openapi: 3.0.4
 info:
   title: Интернет-магазин
   description: 'REST API интернет-магазина, предоставляющее функционал управления товарами, корзиной покупок и оформлением заказов'
-  version: 1.0.0
+  version: 1.0.0 
 tags:
   - name: ProductController
-    description: Работа с товаром 
+    description: Работа с товаром
+  - name: CartController
+    description: Работа с корзиной
 paths:
   /products:
     get:
+      summary: Получить все товары
       tags:
         - ProductController
-      summary: Получить все товары
+      operationId: getAllProducts
       responses:
         '200':
           description: Список товаров
@@ -22,28 +25,30 @@ paths:
                 items:
                   $ref: '#/components/schemas/Product'
     post:
+      summary: Создать товар
       tags:
         - ProductController
-      summary: Создать товар
+      operationId: createProduct
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Product'
+              $ref: '#/components/schemas/ProductCreate'
       responses:
-        '200':
+        '201':
           description: Товар создан
   '/products/{id}':
     get:
+      summary: Получить товар по id
       tags:
         - ProductController
-      summary: Получить товар по id
+      operationId: getProductById
       parameters:
         - name: id
           in: path
           required: true
-          description: ID товара
+          description: ID уникального товара
           schema:
             type: integer
       responses:
@@ -55,17 +60,129 @@ paths:
                 $ref: '#/components/schemas/Product'
         '404':
           description: Товар не найден
+  '/carts/{cartId}':
+    get:
+      summary: Получить корзину по id
+      tags:
+        - CartController
+      operationId: getCartById
+      responses:
+        '200':
+          description: Корзина найдена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+        '404':
+          description: Корзина не найдена
+      parameters:
+        - schema:
+            type: integer
+          description: ID уникальной корзины
+          name: cartId
+          in: path
+          required: true
+  '/carts/{cartId}/items':
+    post:
+      summary: Добавить в конкретную корзину товар
+      operationId: addItemToCart
+      tags:
+        - CartController
+      parameters:
+        - schema:
+            type: integer
+          name: cartId
+          description: ID уникальной корзины
+          in: path
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CartItem'
+      responses:
+        '200':
+          description: Товар добавлен
+  '/carts/{cartId}/items/{productId}':
+    delete:
+      summary: Удалить товар из корзины
+      operationId: removeItemFromCart
+      tags:
+        - CartController
+      parameters:
+        - name: cartId
+          in: path
+          required: true
+          description: ID уникальной корзины
+          schema:
+            type: integer
+        - name: productId
+          in: path
+          required: true
+          description: ID уникального товара
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Товар удалён
+        '404':
+          description: Не найден товар или корзина
 components:
   schemas:
     Product:
       type: object
       properties:
-        id:
+        productId:
           type: integer
+          readOnly: true
         name:
           type: string
+          minLength: 1
+          maxLength: 100
         price:
           type: number
+          minimum: 0
+          maximum: 100000
+          multipleOf: 0.01
+    ProductCreate:
+      title: ProductCreate
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+        price:
+          type: number
+          x-stoplight:
+            id: w6ghhvu1d7loj
+          minimum: 0
+          maximum: 100000
+          multipleOf: 0.01
+    Cart:
+      title: Cart
+      type: object
+      properties:
+        cartId:
+          type: integer
+          readOnly: true
+        items:
+          type: array
+          minItems: 0
+          maxItems: 1000
+          items:
+            $ref: '#/components/schemas/CartItem'
+    CartItem:
+      title: CartItem
+      type: object
+      properties:
+        productId:
+          type: integer
+        quantity:
+          type: integer
+          maximum: 100
+          minimum: 1
 servers:
   # Added by API Auto Mocking Plugin
   - description: SwaggerHub API Auto Mocking
