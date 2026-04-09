@@ -1,1 +1,72 @@
-
+openapi: 3.0.4
+info:
+  title: Интернет-магазин
+  description: 'REST API интернет-магазина, предоставляющее функционал управления товарами, корзиной покупок и оформлением заказов'
+  version: 1.0.0
+tags:
+  - name: ProductController
+    description: Работа с товаром 
+paths:
+  /products:
+    get:
+      tags:
+        - ProductController
+      summary: Получить все товары
+      responses:
+        '200':
+          description: Список товаров
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+    post:
+      tags:
+        - ProductController
+      summary: Создать товар
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        '200':
+          description: Товар создан
+  '/products/{id}':
+    get:
+      tags:
+        - ProductController
+      summary: Получить товар по id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID товара
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Товар найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Товар не найден
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        price:
+          type: number
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: 'https://virtserver.swaggerhub.com/null-cc9/task_2/1.0.0'
