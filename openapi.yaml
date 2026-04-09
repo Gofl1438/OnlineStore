@@ -2,12 +2,14 @@ openapi: 3.0.4
 info:
   title: Интернет-магазин
   description: 'REST API интернет-магазина, предоставляющее функционал управления товарами, корзиной покупок и оформлением заказов'
-  version: 1.0.0 
+  version: 1.0.0
 tags:
   - name: ProductController
     description: Работа с товаром
-  - name: CartController
+  - name: CartController 
     description: Работа с корзиной
+  - name: OrderController
+    description: Работа с заказами
 paths:
   /products:
     get:
@@ -128,6 +130,56 @@ paths:
           description: Товар удалён
         '404':
           description: Не найден товар или корзина
+  /orders:
+    get:
+      summary: Получить все заказы
+      operationId: getAllOrders
+      tags:
+        - OrderController
+      responses:
+        '200':
+          description: Список заказов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+    post:
+      summary: Создать заказ
+      operationId: createOrder
+      tags:
+        - OrderController
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderCreate'
+      responses:
+        '201':
+          description: Заказ создан
+  '/orders/{id}':
+    get:
+      summary: Получить заказ по id
+      operationId: getOrderById
+      tags:
+        - OrderController
+      parameters:
+        - schema:
+            type: integer
+          name: id
+          in: path
+          required: true
+      responses:
+        '200':
+          description: Заказ найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '404':
+          description: Заказ не найден
 components:
   schemas:
     Product:
@@ -183,6 +235,79 @@ components:
           type: integer
           maximum: 100
           minimum: 1
+    Order:
+      title: Order
+      type: object
+      properties:
+        orderId:
+          type: integer
+          readOnly: true
+        userId:
+          type: integer
+          x-stoplight:
+            id: 23ph04pik5rn6
+        items:
+          type: array
+          x-stoplight:
+            id: q0ydfr68tnvol
+          items:
+            $ref: '#/components/schemas/OrderItem'
+        totalPrice:
+          type: number
+          x-stoplight:
+            id: tby1lex4y5ly4
+          minimum: 1
+          multipleOf: 0.01
+          readOnly: true
+        status:
+          x-stoplight:
+            id: 19imnvajqh80e
+          enum:
+            - ожидает обработки
+            - оплачен
+            - отправлен
+            - доставлен
+            - отменён
+    OrderCreate:
+      title: OrderCreate
+      type: object
+      properties:
+        items:
+          type: array
+          x-stoplight:
+            id: kbqjzvenjihtj
+          items:
+            $ref: '#/components/schemas/OrderItemCreate'
+    OrderItem:
+      title: OrderItem
+      type: object
+      properties:
+        productId:
+          type: integer
+        quantity:
+          type: integer
+          x-stoplight:
+            id: 21ex9rwe9tx51
+          minimum: 1
+          maximum: 1000
+        price:
+          type: number
+          x-stoplight:
+            id: oq7yfej2syt02
+          minimum: 0
+          multipleOf: 0.01
+    OrderItemCreate:
+      title: OrderItemCreate
+      type: object
+      properties:
+        productId:
+          type: integer
+        quantity:
+          type: integer
+          x-stoplight:
+            id: hxmqwhzz8cubd
+          minimum: 1
+          maximum: 1000
 servers:
   # Added by API Auto Mocking Plugin
   - description: SwaggerHub API Auto Mocking
